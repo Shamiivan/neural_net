@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<string.h>
+#include <string.h>
 
 typedef struct Matrix {
   int n_rows;
@@ -50,7 +50,6 @@ void matrix_display(Matrix *matrix) {
   printf("\nCount : %d", count);
 }
 
-
 int csv_file_get_num_rows(const char *filepath) {
   int MAX_LINE_LENGTH = 10000;
   FILE *file = fopen(filepath, "r");
@@ -90,42 +89,51 @@ int csv_file_get_num_cols(const char *filepath) {
   return col_count;
 }
 
-int main(int argc, char *argv[]) {
 
-  double arr1[][2] = {{10.4, 2.43}, {3.43, 4}};
-  double arr2[][2] = {{4.3, 2}, {3, 4.32}};
+//returns -1 if filling the dataset fails and 1 if succefull
+int populate_dataset(Matrix *dataset) {
+  int rows = dataset->n_rows;
+  int cols = dataset->n_cols;
 
-
- 
-  
   const char *filepath = "./dataset/train.csv";
-  int rows =  csv_file_get_num_rows(filepath);
-  int cols  = csv_file_get_num_cols(filepath);
 
-  printf("The number of cols is : %d", cols);
-
-  Matrix mat1 = matrix_create(1, cols);
-  Matrix mat2 = matrix_create(28, 28);
-
-  
   FILE *file = fopen(filepath, "r");
   if (file == NULL) {
     printf("Failed to open file\n");
-    return 1;
+    return -1;
   }
 
   char line[1000];
   char *token;
-  fgets(line, sizeof(line), file);
-  
-  // populate matrix
-  for(int j = 0; j< cols; j++){
-      double n = strtod(&line[j],NULL);
-     matrix_add_item(&mat1, 0, j,n);
-   }
-  printf("\nDisplaying matrix \n");
-  matrix_display(&mat1);
 
-  printf("Hello, World\n");
+  for (size_t i = 0; i < rows; i++) {
+    fgets(line, 1000, file);
+    for (size_t j = 0; j < cols; j++) {
+      double item = strtod(&line[j], NULL);
+      matrix_add_item(dataset, i, j, item);
+    }
+  }
+
+  return 1;
+}
+
+int main(int argc, char *argv[]) {
+  const char *filepath = "./dataset/train.csv";
+  int rows = csv_file_get_num_rows(filepath);
+  int cols = csv_file_get_num_cols(filepath);
+
+  printf("The number of cols is : %d", cols);
+
+  // 1D Array
+  Matrix mat1 = matrix_create(1, cols);
+
+  Matrix dataset = matrix_create(rows, cols);
+
+  if (populate_dataset(&dataset) == 1) {
+
+    printf("\nDisplaying matrix\n");
+    matrix_display(&dataset);
+  }
+
   return EXIT_SUCCESS;
 }
